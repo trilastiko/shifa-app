@@ -72,8 +72,31 @@ const ALL_SUGGESTIONS = [
   { emoji: "💫", text: "Saya ingin lebih dekat dengan Al-Qur'an" },
 ];
 
+const PLACEHOLDERS = [
+  "Ceritakan apa yang sedang membebani hatimu...",
+  "Saya merasa cemas dan tidak tenang...",
+  "Apa kata Al-Qur'an tentang warisan?",
+  "Saya sedang menghadapi ujian hidup yang berat...",
+  "Bagaimana cara bersabar menurut Al-Qur'an?",
+  "Saya kehilangan semangat dan motivasi...",
+  "Apa dalil tentang keutamaan sedekah?",
+  "Saya ingin bertaubat tapi tidak tahu caranya...",
+  "Hati saya sedang gundah tanpa sebab yang jelas...",
+  "Bagaimana Al-Qur'an memandang tentang rezeki?",
+  "Saya takut gagal dan mengecewakan keluarga...",
+  "Apa yang Al-Qur'an ajarkan tentang bersyukur?",
+  "Saya merasa jauh dari Allah dan ingin kembali...",
+  "Bagaimana menghadapi orang yang menzalimi kita?",
+  "Saya khawatir tentang masa depan anak-anak saya...",
+  "Apa hukum dan dalil tentang zakat dalam Al-Qur'an?",
+];
+
 function shuffleAndPick(arr, n) {
   return [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+function getRandomPlaceholder() {
+  return PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
 }
 
 // Use /api/chat proxy in production, direct API in artifact preview
@@ -210,6 +233,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [loadingPhase, setLoadingPhase] = useState(0);
   const [suggestions, setSuggestions] = useState(() => shuffleAndPick(ALL_SUGGESTIONS, 6));
+  const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder());
   const [mode, setMode] = useState(() => {
     try { return window.matchMedia?.("(prefers-color-scheme:light)").matches ? "light" : "dark"; }
     catch { return "dark"; }
@@ -266,7 +290,7 @@ export default function App() {
   }
 
   const handleSuggestion = text => { setInput(text); setResult(null); setError(null); textareaRef.current?.focus(); };
-  const handleReset = () => { setInput(""); setResult(null); setError(null); refreshSuggestions(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const handleReset = () => { setInput(""); setResult(null); setError(null); refreshSuggestions(); setPlaceholder(getRandomPlaceholder()); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   // FIXED: GradText uses NO transition — this prevents the rectangle flash bug
   const GradText = ({ children, style: s }) => (
@@ -365,7 +389,7 @@ export default function App() {
           <textarea ref={textareaRef} value={input}
             onChange={e=>setInput(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))handleSubmit()}}
-            placeholder="Contoh: Saya sedang merasa cemas... atau: Apa kata Al-Qur'an tentang warisan?"
+            placeholder={placeholder}
             rows={3} disabled={loading}
             style={{
               width:"100%",padding:"14px 16px",fontSize:"14.5px",lineHeight:"1.7",
@@ -481,8 +505,14 @@ export default function App() {
         )}
 
         <footer style={{ textAlign:"center",marginTop:"52px",padding:"20px 0",borderTop:`1px solid ${c.border}`,transition:"border-color 0.35s" }}>
-          <p style={{ fontSize:"11.5px",color:c.text4,marginBottom:"3px",transition:"color 0.35s" }}>Shifā — Al-Qur'an sebagai penyembuh hati</p>
-          <p style={{ fontSize:"10.5px",color:c.text5,transition:"color 0.35s" }}>Powered by AI · Selalu verifikasi dengan ulama terpercaya</p>
+          <p style={{ fontSize:"11.5px",color:c.text4,marginBottom:"4px",transition:"color 0.35s" }}>Shifā — Al-Qur'an sebagai penyembuh hati</p>
+          <p style={{ fontSize:"10.5px",color:c.text5,marginBottom:"4px",transition:"color 0.35s" }}>Powered by AI · Selalu verifikasi dengan ulama terpercaya</p>
+          <p style={{ fontSize:"10px",color:c.text5,transition:"color 0.35s" }}>
+            © {new Date().getFullYear()}{" "}
+            <a href="https://sab.id" target="_blank" rel="noopener noreferrer" style={{ color:c.text4,textDecoration:"none",borderBottom:`1px solid ${c.border}`,transition:"color 0.35s" }}>
+              PT Sinergi Antar Benua (SAB)
+            </a>
+          </p>
         </footer>
       </main>
     </div>
