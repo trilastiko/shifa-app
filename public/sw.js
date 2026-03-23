@@ -1,10 +1,11 @@
-const CACHE_NAME = 'shifa-v1';
+const CACHE_NAME = 'shifa-v2';
 const STATIC_ASSETS = [
   '/',
   '/favicon.svg',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

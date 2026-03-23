@@ -175,7 +175,7 @@ function AudioPlayer({ url, c }) {
 function ShareButtons({ verse, c }) {
   const [copied, setCopied] = useState(false);
   const txt = `📖 ${verse.surah} : ${verse.ayah_number}\n\n${verse.verified_arabic||verse.arabic_text}\n\n"${verse.translation}"\n\n— Shifā (shifa.sab.id)`;
-  const wa = () => window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+  const wa = () => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, "_blank");
   const cp = async () => { try { await navigator.clipboard.writeText(txt); setCopied(true); setTimeout(()=>setCopied(false),2000); } catch{} };
   return (
     <div style={{display:"flex",gap:"6px",marginTop:"12px"}}>
@@ -252,7 +252,7 @@ export default function App() {
     try {
       const res = await fetch(API_URL, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,system:SYSTEM_PROMPT,messages:[{role:"user",content:input.trim()}]}),
+        body: JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:4000,system:SYSTEM_PROMPT,messages:[{role:"user",content:input.trim()}]}),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message||"Terjadi kesalahan. Silakan coba lagi.");
