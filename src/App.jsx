@@ -38,7 +38,7 @@ FORMAT JAWABAN (WAJIB JSON murni, TANPA backtick/markdown/teks lain):
   "dua_translation": "Terjemahan doa"
 }
 
-PEDOMAN: Bahasa lembut & menguatkan. Ayat relevan. Tafsir kontekstual. Teks Arab & transliterasi AKURAT. surah_number HARUS angka benar. HANYA JSON murni.`;
+PEDOMAN: Bahasa lembut & menguatkan. Ayat relevan. Tafsir kontekstual. Teks Arab & transliterasi AKURAT. surah_number dan ayah_number HARUS BENAR dan SESUAI dengan ayat yang dimaksud — ini SANGAT PENTING karena digunakan untuk validasi. Tafsir harus sesuai dengan ayat yang disebutkan. HANYA JSON murni.`;
 
 const ALL_SUGGESTIONS = [
   { emoji: "💭", text: "Hati saya sedang sedih dan gelisah tanpa sebab yang jelas" },
@@ -96,11 +96,19 @@ async function enrichVerse(surahNum, ayahNum) {
   try {
     const n = parseInt(surahNum), a = parseInt(ayahNum);
     if (!n || !a || n < 1 || n > 114) return null;
-    const res = await fetch(`https://api.alquran.cloud/v1/ayah/${n}:${a}/ar.alafasy`);
+    const res = await fetch(`https://api.alquran.cloud/v1/ayah/${n}:${a}/editions/ar.alafasy,id.indonesian,en.transliteration`);
     if (!res.ok) return null;
-    const d = (await res.json())?.data;
-    if (!d) return null;
-    return { verified_arabic: d.text, audio_url: d.audio };
+    const editions = (await res.json())?.data;
+    if (!editions || !Array.isArray(editions)) return null;
+    const arabic = editions.find(e => e.edition?.identifier === "ar.alafasy");
+    const indo = editions.find(e => e.edition?.identifier === "id.indonesian");
+    const translit = editions.find(e => e.edition?.identifier === "en.transliteration");
+    return {
+      verified_arabic: arabic?.text || null,
+      audio_url: arabic?.audio || null,
+      verified_translation: indo?.text || null,
+      verified_transliteration: translit?.text || null,
+    };
   } catch { return null; }
 }
 
@@ -268,7 +276,18 @@ export default function App() {
       // Enrich with Quran API
       parsed.verses = await Promise.all(parsed.verses.map(async v => {
         const api = await enrichVerse(v.surah_number, v.ayah_number);
-        return api ? { ...v, verified_arabic: api.verified_arabic, audio_url: api.audio_url, verified: true } : { ...v, verified: false, audio_url: null };
+        if (api) {
+          return {
+            ...v,
+            verified_arabic: api.verified_arabic,
+            arabic_text: api.verified_arabic || v.arabic_text,
+            transliteration: api.verified_transliteration || v.transliteration,
+            translation: api.verified_translation || v.translation,
+            audio_url: api.audio_url,
+            verified: true,
+          };
+        }
+        return { ...v, verified: false, audio_url: null };
       }));
       setResult(parsed);
     } catch (err) { setError(err.message||"Terjadi kesalahan."); }
