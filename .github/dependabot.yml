@@ -9,4 +9,16 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
+    groups:
+      react-runtime:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+      vite-toolchain:
+        patterns:
+          - vite
+          - "@vitejs/plugin-react"
+          - vitest
